@@ -363,9 +363,46 @@ You should apply this command in the terminal session *before* executing the Ray
 
 ### 12. Prepare Your Dataset for verl
 
-Before running a training job, you'll need to prepare your dataset in a format compatible with verl. verl uses dataset configurations specified within its training configuration files (often YAML). Reward functions are also integrated within verl's framework rather than requiring a separate remote server.
+Before running a training job, you'll need to prepare your dataset in a format compatible with verl. verl uses dataset configurations specified within its training configuration files (often YAML). Reward functions are also integrated within verl's framework rather arrested than requiring a separate remote server.
 
-Refer to the verl documentation on [Data Preparation](https://verl.readthedocs.io/en/latest/data/data_prep.html) and [Implement Reward Function for Dataset](https://verl.readthedocs.io/en/latest/data/reward_function.html) for detailed instructions on preparing your specific dataset and integrating your reward function.
+verl supports multimodal datasets. The Qwen2.5-VL-32B model you are using is a visual language model, so you will likely need a multimodal dataset like MathV60K or geo3k.
+
+**Option 1: Using the MathV60K Dataset**
+
+If you plan to use the MathV60K dataset (as covered in the original OpenRLHF-M setup), follow these steps:
+
+1. Create the datasets directory:
+```bash
+    mkdir -p /data/datasets
+```
+
+2. Download and prepare the MathV60K dataset:
+
+On the head node:
+```bash
+    cd /workspace/verl
+    python3 examples/scripts/downloaders/download_mathv60k.py --root_dir /data/datasets/VerMulti
+```
+
+This script will download and prepare the MathV60K dataset in `/data/datasets/VerMulti`.
+
+**Option 2: Using the geo3k Dataset (for replicating verl examples)**
+
+If you want to run examples that use the geo3k dataset (e.g., the Qwen2.5-VL-7B GRPO example), you can use the provided downloader script.
+
+1. Navigate to the verl examples downloaders directory:
+```bash
+    cd /workspace/verl/examples/downloaders
+```
+
+2. Run the geo3k downloader script:
+```bash
+    python3 download_geo3k.py --root_dir /data/datasets/geo3k
+```
+
+This script will download the geo3k dataset files into `/data/datasets/geo3k/`. The train file will be located at `/data/datasets/geo3k/train.parquet` and the test file at `/data/datasets/geo3k/test.parquet`.
+
+Refer to the verl documentation on [Data Preparation](https://verl.readthedocs.io/en/latest/data/data_prep.html) and [Implement Reward Function for Dataset](https://verl.readthedocs.io/en/latest/data/reward_function.html) for detailed instructions on preparing your specific dataset and integrating your reward function. Ensure the `data.train_files` and `data.val_files` parameters in your training script point to the correct dataset paths.
 
 ### 15. Run Your verl Training Job
 
