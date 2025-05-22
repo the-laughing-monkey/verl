@@ -1,7 +1,7 @@
-# Running OpenRLHF-M on RunPod: The Ultimate Deployment Guide
+# Running verl on RunPod: The Ultimate Deployment Guide
 
-Welcome to the OpenRLHF-M RunPodding guide!  
-Here, we show you how to unleash OpenRLHF-M on a RunPod instance. Whether you're working on language model alignment or multimodal reinforcement learning, this guide will get you set up with a system that boasts 1000GB storage and the best distributed training practices in town.
+Welcome to the verl RunPodding guide!  
+Here, we show you how to unleash verl on a RunPod instance. Whether you're working on large language model post-training or multimodal reinforcement learning, this guide will get you set up with a system that boasts substantial storage and leverages best practices for distributed training.
 
 ---
 
@@ -61,7 +61,7 @@ RunPod Pytorch 2.4.0  (by default it pickes 2.2.1) OR 2.8 for Blackwell cards.
    ssh -i ~/.ssh/my_runpod_key root@<POD_IP_ADDRESS> -p <SSH_PORT>
 ```
 
-### 4. Updates your OS, Set Up Your Python Environment and Install OpenRLHF-M
+### 4. Updates your OS, Set Up Your Python Environment and Install verl
 
 1. Update the system and install Python tools:
 ```bash
@@ -75,14 +75,14 @@ RunPod Pytorch 2.4.0  (by default it pickes 2.2.1) OR 2.8 for Blackwell cards.
 ```bash
    mkdir /workspace
    cd /workspace
-   python3 -m venv openrlhf-env
-   source openrlhf-env/bin/activate
+   python3 -m venv verl-env
+   source verl-env/bin/activate
 ```
 
-### 5. Clone the repository OpenRLHF-M repository and install it
+### 5. Clone the verl repository
 
 ```bash
-  git clone https://github.com/the-laughing-monkey/OpenRLHF-M.git
+  git clone https://github.com/the-laughing-monkey/verl.git
 ```
 
 ### 6. Pip install huggingface hub so you can download models and data while the rest installs
@@ -104,7 +104,7 @@ ulimit -s unlimited
 
 On both nodes:
 ```bash
-  cd ./OpenRLHF-M
+  cd ./verl
   bash ./examples/scripts/setup/setup.sh
 ```
 
@@ -151,7 +151,7 @@ Before running a training job, you'll need to prepare the dataset:
 
 On the head node:
 ```bash
-    cd /workspace/OpenRLHF-M
+    cd /workspace/verl
     python3 examples/scripts/downloaders/download_mathv60k.py --root_dir /data/datasets/VerMulti
 ```
 
@@ -165,7 +165,7 @@ The script provides detailed progress information and will tell you when the dat
 
 3. Download the Qwen2.5-VL-32B model:
 ```bash
-    cd /workspace/OpenRLHF-M
+    cd /workspace/verl
     python3 examples/scripts/downloaders/download_model.py --model_name Qwen/Qwen2.5-VL-32B-Instruct
 ```
 
@@ -192,14 +192,14 @@ CRITICAL: RunPod only allows internode communication over eth1. So you need to s
 ```
 
 
-### 13. Run Your First OpenRLHF-M Training Job with MathV60K
+### 13. Run Your First verl Training Job with MathV60K
 
 Now you're ready to launch a training job using the MathV60K dataset and the Qwen2.5-VL-3B model:
 
 1. First, copy the script to your pod:
 
 ```bash
-    cd /workspace/OpenRLHF-M
+    cd /workspace/verl
     mkdir -p ./scripts
     cp examples/scripts/tests/train_grpo_ray_qwen2_5_vl_32b_mathv60k_singlenode_lora.sh ./scripts/my_train_script.sh
 ```
@@ -256,7 +256,7 @@ a. Update the GPU distribution in the training command. For example, if you have
 
 b. Make sure the working directory is set correctly:
 ```bash
-    --runtime-env-json="{\"working_dir\": \"/data/OpenRLHF-M\"}" \
+    --runtime-env-json="{\"working_dir\": \"/data/verl\"}" \
 ```
 
 3. Run the adjusted training script:
@@ -360,3 +360,43 @@ ray start --head ... # or ray start --address=...
 ```
 
 You should apply this command in the terminal session *before* executing the Ray start command on both head and worker nodes.
+
+### 12. Prepare Your Dataset for verl
+
+Before running a training job, you'll need to prepare your dataset in a format compatible with verl. verl uses dataset configurations specified within its training configuration files (often YAML). Reward functions are also integrated within verl's framework rather than requiring a separate remote server.
+
+Refer to the verl documentation on [Data Preparation](https://verl.readthedocs.io/en/latest/data/data_prep.html) and [Implement Reward Function for Dataset](https://verl.readthedocs.io/en/latest/data/reward_function.html) for detailed instructions on preparing your specific dataset and integrating your reward function.
+
+### 15. Run Your verl Training Job
+
+Unlike OpenRLHF-M, verl typically uses YAML configuration files to manage training parameters. While a base configuration is defined in a YAML file, you can override specific settings directly from the command line using a `parameter.subparameter=value` syntax.
+
+Here's an example command to launch a verl training job using `verl.trainer.main_ppo`, adapting settings from the previous OpenRLHF-M script. Note that this assumes you have prepared your dataset and integrated your reward function according to the verl documentation ([Data Preparation](https://verl.readthedocs.io/en/latest/data/data_prep.html), [Implement Reward Function for Dataset](https://verl.readthedocs.io/en/latest/data/reward_function.html)). You will also likely need a base YAML configuration file which this command will override.
+
+```bash
+python3 -m verl.trainer.main_ppo \
+    actor_rollout_ref.model.path=${PRETRAIN_MODEL_PATH} \
+    data.train_files=${DATASET_PATH} \
+    trainer.n_gpus_per_node=8 \
+    trainer.logger=['console','wandb'] \
+    trainer.project_name='your_verl_project' \
+    trainer.experiment_name='${MODEL_NAME}' \
+    # Add other overrides as needed, referring to verl documentation and example YAMLs
+    # Example overrides for batch sizes, learning rate, etc. might look like:
+    # data.train_batch_size=128 \
+    # actor_rollout_ref.actor.optim.lr=5e-7 \
+    # algorithm.use_kl_loss=True \
+    # algorithm.kl_loss_coef=1e-3 \
+    # trainer.save_freq=5 \
+    $@
+```
+
+**Explanation of key overrides:**
+
+*   `actor_rollout_ref.model.path`: Specifies the path to your pre-trained model (e.g., Qwen/Qwen2.5-VL-32B-Instruct).
+*   `data.train_files`: Points to your prepared training dataset file(s).
+*   `trainer.n_gpus_per_node`: Sets the number of GPUs to use per node.
+*   `trainer.logger`: Configures logging (e.g., to console and WandB).
+*   `trainer.project_name` and `trainer.experiment_name`: Sets the project and experiment names for WandB logging.
+
+Consult the verl documentation and the example scripts in the `examples` directory for the full range of configuration options and how to structure your base YAML file.
