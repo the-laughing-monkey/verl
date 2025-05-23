@@ -5,10 +5,11 @@
 # This script adapts instructions from sections 4, 5, and 6 of the deployment guide for verl.
 
 #############################
-# Set Working Root
+# Set Working Root and Clone Directory
 #############################
 
 WORKING_DIR="$(pwd)" # Use current working directory
+VERL_CLONE_DIR="$WORKING_DIR/verl"
 
 #############################
 # Set maximum number of open file descriptors
@@ -43,7 +44,7 @@ echo "Core python package and PyTorch installation complete."
 
 # Set repository directory in WORKING_DIR
 # REPO_DIR="$WORKING_DIR/OpenRLHF-M" # Original OpenRLHF-M directory
-VERL_REPO_DIR="$WORKING_DIR/verl"
+# VERL_REPO_DIR="$WORKING_DIR/verl" # Removed redundant variable
 
 # Remove existing OpenRLHF-M directory if it exists from previous runs
 # if [ -d "$REPO_DIR" ]; then
@@ -51,13 +52,13 @@ VERL_REPO_DIR="$WORKING_DIR/verl"
 #     rm -rf "$REPO_DIR"
 # fi
 
-if [ ! -d "$VERL_REPO_DIR" ]; then
-    echo "Cloning verl repository into $VERL_REPO_DIR"
-    git clone https://github.com/the-laughing-monkey/verl.git "$VERL_REPO_DIR"
+if [ ! -d "$VERL_CLONE_DIR" ]; then
+    echo "Cloning verl repository into $VERL_CLONE_DIR"
+    git clone https://github.com/the-laughing-monkey/verl.git "$VERL_CLONE_DIR"
 fi
 
-echo "Changing directory to verl repository: $VERL_REPO_DIR"
-cd "$VERL_REPO_DIR"
+echo "Changing directory to verl repository: $VERL_CLONE_DIR"
+cd "$VERL_CLONE_DIR"
 
 # Install verl with default and vllm extras
 echo "Installing verl with default and vllm extras"

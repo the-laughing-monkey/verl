@@ -105,7 +105,7 @@ ulimit -s unlimited
 On both nodes:
 ```bash
   cd ./verl
-  bash ./examples/scripts/setup/setup.sh
+  bash ./scripts/setup_dj.sh
 ```
 
 ### 8. (Optional) Set Your WandB API Key
