@@ -1,6 +1,8 @@
 set -x
 ENGINE=${1:-vllm}
 
+export VERL_LOGGING_LEVEL=INFO # Or DEBUG for even more detailed logs
+
 python3 -m verl.trainer.main_ppo \
     algorithm.adv_estimator=grpo \
     data.train_files=$HOME/data/geo3k/train.parquet \
