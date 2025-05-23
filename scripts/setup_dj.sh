@@ -44,9 +44,8 @@ pip install --no-cache-dir torch==2.6.0 torchvision==0.21.0 torchaudio==2.6.0 --
 
 echo "Core python package and PyTorch installation complete."
 
-
 #############################
-# 2. Clone and Install verl and Extras
+# 2. Clone verl and Install Core Requirements
 #############################
 
 # Set repository directory in WORKING_DIR
@@ -67,17 +66,24 @@ fi
 echo "Changing directory to verl repository: $VERL_REPO_ROOT"
 cd "$VERL_REPO_ROOT"
 
-# Install verl with default, vllm, and sglang extras
-echo "Installing verl with default, vllm, and sglang extras"
-# Added sglang extra to leverage verl's defined dependencies for sglang and flashinfer_python
-pip install -e .[default,vllm,sglang]
+# Install vLLM and SGLang explicitly with specified versions
+echo "Installing vLLM"
+pip install vllm
+
+echo "Installing sglang"
+pip install sglang
+
+# Install verl in editable mode with default extra (excluding vllm and sglang dependencies already installed)
+echo "Installing verl with default extra"
+pip install -e .[default]
+
 
 # Install flash_attn separately with no-build-isolation and specific version/index url
 # This is kept separate as it's a common source of issues and explicitly controlling it can help
 echo "Installing flash-attn with --no-build-isolation"
 pip install --no-build-isolation flash-attn
 
-echo "Verl and extras installation complete."
+echo "Verl and required dependencies installation complete."
 
 #############################
 # 3. Install Megatron-LM and TransformerEngine (Optional)
