@@ -37,7 +37,7 @@ try:
     print(f"      Downloading {train_filename}...")
     hf_hub_download(
         repo_id=repo_id,
-        filename=f"train/{train_filename}", # Specify the actual path in the repo
+        filename=train_filename, # Specify the actual path in the repo
         repo_type="dataset",
         local_dir=DIR_ROOT,
         local_dir_use_symlinks=False
@@ -47,7 +47,7 @@ try:
     print(f"      Downloading {test_filename}...")
     hf_hub_download(
         repo_id=repo_id,
-        filename=f"test/{test_filename}", # Specify the actual path in the repo
+        filename=test_filename, # Specify the actual path in the repo
         repo_type="dataset",
         local_dir=DIR_ROOT,
         local_dir_use_symlinks=False

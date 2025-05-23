@@ -90,19 +90,19 @@ echo "Verl and required dependencies installation complete."
 #############################
 
 # Set USE_MEGATRON to 1 to enable Megatron-LM installation, 0 to disable
-USE_MEGATRON=${USE_MEGATRON:-0}
+#USE_MEGATRON=${USE_MEGATRON:-0}
 
-if [ $USE_MEGATRON -eq 1 ]; then
-    echo "Installing TransformerEngine and Megatron-LM from source (requires cuDNN development headers)"
-    echo "Note: This step may fail if cuDNN development headers are not properly installed on the system."
-    # Install TransformerEngine from git
-    NVTE_FRAMEWORK=pytorch pip install --no-deps git+https://github.com/NVIDIA/TransformerEngine.git@v2.2
-    # Install Megatron-LM core from git
-    pip install --no-deps git+https://github.com/NVIDIA/Megatron-LM.git@core_v0.12.0rc3
-    echo "Megatron-LM and TransformerEngine installation steps completed (check output for errors)."
-else
-    echo "Megatron-LM and TransformerEngine installation skipped (USE_MEGATRON=0)."
-fi
+#if [ $USE_MEGATRON -eq 1 ]; then
+#    echo "Installing TransformerEngine and Megatron-LM from source (requires cuDNN development headers)"
+#    echo "Note: This step may fail if cuDNN development headers are not properly installed on the system."
+#    # Install TransformerEngine from git
+#    NVTE_FRAMEWORK=pytorch pip install --no-deps git+https://github.com/NVIDIA/TransformerEngine.git@v2.2
+#    # Install Megatron-LM core from git
+#    pip install --no-deps git+https://github.com/NVIDIA/Megatron-LM.git@core_v0.12.0rc3
+#    echo "Megatron-LM and TransformerEngine installation steps completed (check output for errors)."
+#else
+#    echo "Megatron-LM and TransformerEngine installation skipped (USE_MEGATRON=0)."
+#fi
 
 
 echo "installation complete."
