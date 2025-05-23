@@ -152,7 +152,7 @@ Before running a training job, you'll need to prepare the dataset:
 On the head node:
 ```bash
     cd /workspace/verl
-    python3 examples/scripts/downloaders/download_mathv60k.py --root_dir /data/datasets/VerMulti
+    python3 examples/downloaders/download_geo3k.py --root_dir /data/datasets/geo3k
 ```
 
 This script will:
@@ -166,7 +166,7 @@ The script provides detailed progress information and will tell you when the dat
 3. Download the Qwen2.5-VL-32B model:
 ```bash
     cd /workspace/verl
-    python3 examples/scripts/downloaders/download_model.py --model_name Qwen/Qwen2.5-VL-32B-Instruct
+    python3 examples/downloaders/download_model.py --model_name Qwen/Qwen2.5-VL-32B-Instruct
 ```
 
 
@@ -179,7 +179,7 @@ CRITICAL: RunPod only allows internode communication over eth1. So you need to s
 ```
 
 
-### 12. Start Ray
+### 12. Start Ray (if you are using Ray - can be run with FSDP or Megatron as well on veRL)
 
 2. Stop any running Ray instances (if any):
 ```bash
@@ -201,7 +201,7 @@ Now you're ready to launch a training job using the MathV60K dataset and the Qwe
 ```bash
     cd /workspace/verl
     mkdir -p ./scripts
-    cp examples/scripts/tests/train_grpo_ray_qwen2_5_vl_32b_mathv60k_singlenode_lora.sh ./scripts/my_train_script.sh
+    cp examples/scripts/tests/train_grpo_qwen2_5_vl_3b_geo3k_singlenode_simple.sh ./scripts/my_train_script.sh
 ```
 
 2. Edit the script to match your pod's GPU configuration:
@@ -212,72 +212,16 @@ Now you're ready to launch a training job using the MathV60K dataset and the Qwe
 
 Make the following adjustments:
 
-
-a. Update the GPU distribution in the training command. For example, if you have 2 GPUs:
-
-# vllm_num_engines x vllm_tensor_parallel_size = number of actor_num_nodes x actor_num_gpus_per_node in one way or another. So this works:
+Adust for your number of GPUs and nodes.
 
 ```bash
-    --actor_num_nodes 1 \
-    --actor_num_gpus_per_node 4 \
-    --vllm_num_engines 4 \
-    --vllm_tensor_parallel_size 1 \
-```
-
-# So does this:
-
-```bash
-    --actor_num_nodes 1 \
-    --actor_num_gpus_per_node 4 \
-    --vllm_num_engines 2 \
-    --vllm_tensor_parallel_size 2 \
-```
-
-# If you want to split a model across multiple nodes, you can do something like this, which would split it across 2 nodes with 8 GPUs each for a total of 16 GPUs:
-
-```bash
-    --actor_num_nodes 1 \
-    --actor_num_gpus_per_node 16 \
-    --vllm_num_engines 8 \
-    --vllm_tensor_parallel_size 2 \
-```
-
-# Here is an example of a more complex GPU distribution for a single node 8 GPU cluster:
-
-```bash
-    --ref_num_nodes 1 \
-    --ref_num_gpus_per_node 8 \
-    --actor_num_nodes 1 \
-    --actor_num_gpus_per_node 8 \
-    --vllm_num_engines 4 \
-    --vllm_tensor_parallel_size 2 \
-    --colocate_all_models \
-```
-
-b. Make sure the working directory is set correctly:
-```bash
-    --runtime-env-json="{\"working_dir\": \"/data/verl\"}" \
+    trainer.n_gpus_per_node=8 \
+    trainer.nnodes=1 \
 ```
 
 3. Run the adjusted training script:
 ```bash
     bash ./scripts/my_train_script.sh
-```
-
-4. **Important Disk Space Considerations:**
-
-Disk space issues can cause training to fail when saving checkpoints. Adjust these parameters in your training script to prevent disk space problems:
-
-```bash
-# Save less frequently
---save_steps 50 \  # Default is often too frequent (e.g., 10)
-
-# Limit number of checkpoints kept (default is 3)
---max_ckpt_num 2 \
-
-# Control checkpoint format (smaller but less compatible)
---disable_ds_ckpt \ # Skip DeepSpeed format checkpoints which are larger
---save_hf_ckpt \    # While still saving HuggingFace format checkpoints (recommended)
 ```
 
 
