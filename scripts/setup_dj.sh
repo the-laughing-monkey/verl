@@ -5,6 +5,13 @@
 # This script adapts instructions from sections 4, 5, and 6 of the deployment guide for verl.
 
 #############################
+# Define Verl Repository Root
+#############################
+
+# Use an absolute path for robustness, assuming /workspace is the intended base.
+VERL_REPO_ROOT="/workspace/verl"
+
+#############################
 # Set Working Root and Clone Directory
 #############################
 
@@ -52,13 +59,13 @@ echo "Core python package and PyTorch installation complete."
 #     rm -rf "$REPO_DIR"
 # fi
 
-if [ ! -d "$VERL_CLONE_DIR" ]; then
-    echo "Cloning verl repository into $VERL_CLONE_DIR"
-    git clone https://github.com/the-laughing-monkey/verl.git "$VERL_CLONE_DIR"
+if [ ! -d "$VERL_REPO_ROOT" ]; then
+    echo "Cloning verl repository into $VERL_REPO_ROOT"
+    git clone https://github.com/the-laughing-monkey/verl.git "$VERL_REPO_ROOT"
 fi
 
-echo "Changing directory to verl repository: $VERL_CLONE_DIR"
-cd "$VERL_CLONE_DIR"
+echo "Changing directory to verl repository: $VERL_REPO_ROOT"
+cd "$VERL_REPO_ROOT"
 
 # Install verl with default and vllm extras
 echo "Installing verl with default and vllm extras"
