@@ -146,26 +146,23 @@ Before running a training job, you'll need to prepare the dataset:
     mkdir -p /data/datasets
 ```
 
-2. Download and prepare the MathV60K dataset:
+2. Download and prepare the geo3k dataset:
 
-On the head node:
 ```bash
     cd /workspace/verl
     python3 examples/downloaders/download_geo3k.py --root_dir /data/datasets/geo3k
 ```
 
-This script will:
-- Download the dataset files from Hugging Face
-- Extract images to the specified directory
-- Process the JSONL file to update paths
-- Make the dataset ready for training
+3. Process the geo3k dataset:
+```bash
+    python3 examples/data_preprocess/geo3k.py --local_dir /data/datasets/geo3k
+```
 
-The script provides detailed progress information and will tell you when the dataset is ready.
 
-3. Download the Qwen2.5-VL-32B model:
+4. Download the Qwen2.5-VL-3B model:
 ```bash
     cd /workspace/verl
-    python3 examples/downloaders/download_model.py --model_name Qwen/Qwen2.5-VL-32B-Instruct
+    python3 examples/downloaders/download_model.py --model_name Qwen/Qwen2.5-VL-3B-Instruct
 ```
 
 
