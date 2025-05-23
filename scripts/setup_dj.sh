@@ -29,7 +29,7 @@ ulimit -n 65536
 # 1. Install Core Python Packages and PyTorch
 #############################
 
-# Define core required python packages, excluding flash_attn for separate installation
+# Define core required python packages
 PACKAGES="pip wheel packaging setuptools huggingface_hub"
 
 echo "Upgrading pip"
@@ -46,7 +46,7 @@ echo "Core python package and PyTorch installation complete."
 
 
 #############################
-# 2. Clone and Install verl
+# 2. Clone and Install verl and Extras
 #############################
 
 # Set repository directory in WORKING_DIR
@@ -67,21 +67,46 @@ fi
 echo "Changing directory to verl repository: $VERL_REPO_ROOT"
 cd "$VERL_REPO_ROOT"
 
-# Install verl with default and vllm extras
-echo "Installing verl with default and vllm extras"
-pip install -e .[default,vllm]
+# Install verl with default, vllm, and sglang extras
+echo "Installing verl with default, vllm, and sglang extras"
+# Added sglang extra to leverage verl's defined dependencies for sglang and flashinfer_python
+pip install -e .[default,vllm,sglang]
 
-# Install flash_attn separately with no-build-isolation
+# Install flash_attn separately with no-build-isolation and specific version/index url
+# This is kept separate as it's a common source of issues and explicitly controlling it can help
 echo "Installing flash-attn with --no-build-isolation"
 pip install --no-build-isolation flash-attn
+
+echo "Verl and extras installation complete."
+
+#############################
+# 3. Install Megatron-LM and TransformerEngine (Optional)
+#############################
+
+# Set USE_MEGATRON to 1 to enable Megatron-LM installation, 0 to disable
+USE_MEGATRON=${USE_MEGATRON:-0}
+
+if [ $USE_MEGATRON -eq 1 ]; then
+    echo "Installing TransformerEngine and Megatron-LM from source (requires cuDNN development headers)"
+    echo "Note: This step may fail if cuDNN development headers are not properly installed on the system."
+    # Install TransformerEngine from git
+    NVTE_FRAMEWORK=pytorch pip install --no-deps git+https://github.com/NVIDIA/TransformerEngine.git@v2.2
+    # Install Megatron-LM core from git
+    pip install --no-deps git+https://github.com/NVIDIA/Megatron-LM.git@core_v0.12.0rc3
+    echo "Megatron-LM and TransformerEngine installation steps completed (check output for errors)."
+else
+    echo "Megatron-LM and TransformerEngine installation skipped (USE_MEGATRON=0)."
+fi
+
 
 echo "installation complete."
 
 # Verify installed versions
 echo "Installed package versions:"
-python -c "import torch; print(f'torch: {torch.__version__}')"
+python -c "import torch; print(f'torch: {torch.__version__}')" || echo "torch: Not Found or Failed to Import"
 python -c "import vllm; print(f'vllm: {vllm.__version__}')" || echo "vllm: Not Found or Failed to Import"
 python -c "import flash_attn; print(f'flash-attn: {flash_attn.__version__}')" || echo "flash-attn: Not Found or Failed to Import"
 python -c "import ray; print(f'ray: {ray.__version__}')" || echo "ray: Not Found or Failed to Import"
 python -c "import verl; print('verl: Installed')" || echo "verl: Not Found or Failed to Import"
-python -c "import megatron.core; print('megatron-core: Installed')" || echo "megatron-core: Not Found or Failed to Import"
+# Check for megatron.core specifically as the package is megatron-core
+python -c "try: import megatron.core; print('megatron-core: Installed')\nexcept ImportError: print('megatron-core: Not Found or Failed to Import')"
