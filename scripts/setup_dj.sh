@@ -114,5 +114,3 @@ python -c "import vllm; print(f'vllm: {vllm.__version__}')" || echo "vllm: Not F
 python -c "import flash_attn; print(f'flash-attn: {flash_attn.__version__}')" || echo "flash-attn: Not Found or Failed to Import"
 python -c "import ray; print(f'ray: {ray.__version__}')" || echo "ray: Not Found or Failed to Import"
 python -c "import verl; print('verl: Installed')" || echo "verl: Not Found or Failed to Import"
-# Check for megatron.core specifically as the package is megatron-core
-python -c "try: import megatron.core; print('megatron-core: Installed')\nexcept ImportError: print('megatron-core: Not Found or Failed to Import')"

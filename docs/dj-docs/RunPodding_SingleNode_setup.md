@@ -102,7 +102,6 @@ ulimit -s unlimited
 
 ### 8. Run setup script to install everything else
 
-On both nodes:
 ```bash
   cd ./verl
   bash ./scripts/setup_dj.sh
