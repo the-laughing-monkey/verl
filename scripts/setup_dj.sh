@@ -30,7 +30,7 @@ ulimit -n 65536
 #############################
 
 # Define core required python packages
-PACKAGES="pip wheel packaging setuptools huggingface_hub qwen-vl-utils"
+PACKAGES="pip wheel packaging setuptools huggingface_hub qwen-vl-utils sgl-kernel"
 
 echo "Upgrading pip"
 pip install --upgrade pip
@@ -71,7 +71,7 @@ echo "Installing vLLM"
 pip install vllm
 
 echo "Installing sglang"
-pip install sglang
+pip install sglang[all]
 
 # Install verl in editable mode with default extra (excluding vllm and sglang dependencies already installed)
 echo "Installing verl with default extra"
