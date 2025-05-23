@@ -201,7 +201,7 @@ Now you're ready to launch a training job using the MathV60K dataset and the Qwe
 ```bash
     cd /workspace/verl
     mkdir -p ./scripts
-    cp examples/scripts/tests/train_grpo_qwen2_5_vl_3b_geo3k_singlenode_simple.sh ./scripts/my_train_script.sh
+    cp examples/tests/train_grpo_qwen2_5_vl_3b_geo3k_singlenode_simple.sh ./scripts/my_train_script.sh
 ```
 
 2. Edit the script to match your pod's GPU configuration:
