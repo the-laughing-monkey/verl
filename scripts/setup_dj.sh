@@ -29,15 +29,15 @@ ulimit -n 65536
 # 1. Install Core Python Packages and PyTorch
 #############################
 
-# Define core required python packages, including those from the original script
-# and potentially others not covered by verl's setup.py install_requires
-PACKAGES="pip wheel packaging setuptools huggingface_hub ring_flash_attn"
+# Define core required python packages, excluding flash_attn for separate installation
+PACKAGES="pip wheel packaging setuptools huggingface_hub"
 
 echo "Upgrading pip"
 pip install --upgrade pip
 
 echo "Installing core python packages: $PACKAGES"
 pip install $PACKAGES
+
 
 echo "Installing a PyTorch version compatible with verl, vLLM, and CUDA 12.4"
 pip install --no-cache-dir torch==2.6.0 torchvision==0.21.0 torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/cu124
@@ -71,6 +71,10 @@ cd "$VERL_REPO_ROOT"
 echo "Installing verl with default and vllm extras"
 pip install -e .[default,vllm]
 
+# Install flash_attn separately with no-build-isolation
+echo "Installing flash-attn with --no-build-isolation"
+pip install --no-build-isolation flash-attn
+
 echo "installation complete."
 
 # Verify installed versions
@@ -78,4 +82,6 @@ echo "Installed package versions:"
 python -c "import torch; print(f'torch: {torch.__version__}')"
 python -c "import vllm; print(f'vllm: {vllm.__version__}')" >/dev/null 2>&1 || echo "vllm: Not Found or Failed to Import"
 python -c "import flash_attn; print(f'flash-attn: {flash_attn.__version__}')" >/dev/null 2>&1 || echo "flash-attn: Not Found or Failed to Import"
-python -c "import ray; print(f'ray: {ray.__version__}')"
+python -c "import ray; print(f'ray: {ray.__version__}')" >/dev/null 2>&1 || echo "ray: Not Found or Failed to Import"
+python -c "import verl; print('verl: Installed')" >/dev/null 2>&1 || echo "verl: Not Found or Failed to Import"
+python -c "import megatron.core; print('megatron-core: Installed')" >/dev/null 2>&1 || echo "megatron-core: Not Found or Failed to Import"
