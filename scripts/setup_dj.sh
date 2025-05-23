@@ -30,7 +30,7 @@ ulimit -n 65536
 #############################
 
 # Define core required python packages
-PACKAGES="pip wheel packaging setuptools huggingface_hub qwen-vl-utils sgl-kernel"
+PACKAGES="pip wheel packaging setuptools huggingface_hub qwen-vl-utils sgl-kernel mathruler"
 
 echo "Upgrading pip"
 pip install --upgrade pip
