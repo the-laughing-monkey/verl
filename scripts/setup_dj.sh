@@ -46,16 +46,53 @@ pip install $PACKAGES
 echo "Uninstalling existing PyTorch, torchvision, torchaudio, and vllm..."
 pip uninstall -y torch torchvision torchaudio vllm || true
 
-# Install PyTorch 2.6.0, torchvision 0.21.0, torchaudio 2.6.0 and vLLM 0.8.5.post1 with CUDA 12.4
-PYTORCH_VERSION="2.6.0"
-TORCHVISION_VERSION="0.21.0"
-TORCHAUDIO_VERSION="2.6.0"
-VLLM_VERSION="0.8.5.post1"
-CUDA_VERSION="cu124"
+# Function to get GPU compute capability
+get_compute_capability() {
+    if command -v nvidia-smi &> /dev/null;
+    then
+        nvidia-smi --query-gpu=compute_cap --format=csv,noheader | head -n 1
+    else
+        echo ""
+    fi
+}
 
-echo "Installing PyTorch $PYTORCH_VERSION, torchvision $TORCHVISION_VERSION, torchaudio $TORCHAUDIO_VERSION ($CUDA_VERSION) and vllm $VLLM_VERSION."
-pip install --no-cache-dir torch==$PYTORCH_VERSION torchvision==$TORCHVISION_VERSION torchaudio==$TORCHAUDIO_VERSION --index-url https://download.pytorch.org/whl/$CUDA_VERSION
-pip install vllm==$VLLM_VERSION
+COMPUTE_CAP=$(get_compute_capability)
+IS_BLACKWELL=false
+
+if [ -z "$COMPUTE_CAP" ]; then
+    echo "Could not detect NVIDIA GPU compute capability. Assuming older architecture compatible with PyTorch 2.6 / vLLM 0.8.5.post1."
+else
+    MAJOR_COMPUTE_CAP=$(echo "$COMPUTE_CAP" | cut -d. -f1)
+    if [ "$MAJOR_COMPUTE_CAP" -ge 10 ]; then
+        IS_BLACKWELL=true
+        echo "Detected NVIDIA GPU with compute capability $COMPUTE_CAP (likely Blackwell or newer)."
+    else
+        echo "Detected NVIDIA GPU with compute capability $COMPUTE_CAP (older architecture)."
+    fi
+fi
+
+# Install PyTorch and vLLM based on detected architecture
+if $IS_BLACKWELL; then
+    # Install PyTorch 2.7.0, torchvision 0.22.0, torchaudio 2.7.0 and vLLM 0.9.0 for newer architectures (like Blackwell)
+    PYTORCH_VERSION="2.7.0"
+    TORCHVISION_VERSION="0.22.0"
+    TORCHAUDIO_VERSION="2.7.0"
+    VLLM_VERSION="0.9.0"
+    CUDA_VERSION="cu128"
+    echo "Installing PyTorch $PYTORCH_VERSION, torchvision $TORCHVISION_VERSION, torchaudio $TORCHAUDIO_VERSION ($CUDA_VERSION) and vllm $VLLM_VERSION from test index."
+    pip install --no-cache-dir torch==$PYTORCH_VERSION torchvision==$TORCHVISION_VERSION torchaudio==$TORCHAUDIO_VERSION --index-url https://download.pytorch.org/whl/test/$CUDA_VERSION
+    pip install vllm==$VLLM_VERSION
+else
+    # Install PyTorch 2.6.0, torchvision 0.21.0, torchaudio 2.6.0 and vLLM 0.8.5.post1 for older architectures
+    PYTORCH_VERSION="2.6.0"
+    TORCHVISION_VERSION="0.21.0"
+    TORCHAUDIO_VERSION="2.6.0"
+    VLLM_VERSION="0.8.5.post1"
+    CUDA_VERSION="cu124"
+    echo "Installing PyTorch $PYTORCH_VERSION, torchvision $TORCHVISION_VERSION, torchaudio $TORCHAUDIO_VERSION ($CUDA_VERSION) and vllm $VLLM_VERSION from standard index."
+    pip install --no-cache-dir torch==$PYTORCH_VERSION torchvision==$TORCHVISION_VERSION torchaudio==$TORCHAUDIO_VERSION --index-url https://download.pytorch.org/whl/$CUDA_VERSION
+    pip install vllm==$VLLM_VERSION
+fi
 
 echo "PyTorch and vLLM installation complete."
 
