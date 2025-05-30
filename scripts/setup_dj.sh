@@ -26,11 +26,11 @@ echo "Setting maximum number of open file descriptors to unlimited"
 ulimit -n 65536
 
 #############################
-# 1. Install Core Python Packages and PyTorch
+# 1. Install Core Python Packages
 #############################
 
-# Define core required python packages
-PACKAGES="pip wheel packaging setuptools huggingface_hub qwen-vl-utils sgl-kernel mathruler deepspeed vllm"
+# Define core required python packages, excluding torch, torchvision, torchaudio, vllm for version compatibility handling
+PACKAGES="pip wheel packaging setuptools huggingface_hub qwen-vl-utils sgl-kernel mathruler deepspeed"
 
 echo "Upgrading pip"
 pip install --upgrade pip
@@ -38,14 +38,62 @@ pip install --upgrade pip
 echo "Installing core python packages: $PACKAGES"
 pip install $PACKAGES
 
+#############################
+# 2. Detect GPU Architecture and Install Compatible PyTorch/vLLM
+#############################
 
-echo "Installing a PyTorch version compatible with verl, vLLM, and CUDA 12.4"
-pip install --no-cache-dir torch==2.6.0 torchvision==0.21.0 torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/cu124
+# Function to get GPU compute capability
+get_compute_capability() {
+    if command -v nvidia-smi &> /dev/null;
+    then
+        nvidia-smi --query-gpu=compute_cap --format=csv,noheader | head -n 1
+    else
+        echo ""
+    fi
+}
 
-echo "Core python package and PyTorch installation complete."
+COMPUTE_CAP=$(get_compute_capability)
+IS_BLACKWELL=false
+
+if [ -z "$COMPUTE_CAP" ]; then
+    echo "Could not detect NVIDIA GPU compute capability. Assuming older architecture compatible with PyTorch 2.6 / vLLM 0.8.5.post1."
+else
+    MAJOR_COMPUTE_CAP=$(echo "$COMPUTE_CAP" | cut -d. -f1)
+    if [ "$MAJOR_COMPUTE_CAP" -ge 9 ]; then
+        IS_BLACKWELL=true
+        echo "Detected NVIDIA GPU with compute capability $COMPUTE_CAP (likely Blackwell or newer). Installing PyTorch 2.7 / vLLM 0.9.0."
+    else
+        echo "Detected NVIDIA GPU with compute capability $COMPUTE_CAP (older architecture). Installing PyTorch 2.6 / vLLM 0.8.5.post1."
+    fi
+fi
+
+# Install PyTorch and vLLM based on detected architecture
+if $IS_BLACKWELL; then
+    # Install PyTorch 2.7.0 and vLLM 0.9.0 for newer architectures (like Blackwell)
+    PYTORCH_VERSION="2.7.0"
+    TORCHVISION_VERSION="0.22.0"
+    TORCHAUDIO_VERSION="2.7.0"
+    VLLM_VERSION="0.9.0"
+    CUDA_VERSION="cu124"
+    echo "Installing torch==$PYTORCH_VERSION, torchvision==$TORCHVISION_VERSION, torchaudio==$TORCHAUDIO_VERSION ($CUDA_VERSION) and vllm==$VLLM_VERSION"
+    pip install --no-cache-dir torch==$PYTORCH_VERSION torchvision==$TORCHVISION_VERSION torchaudio==$TORCHAUDIO_VERSION --index-url https://download.pytorch.org/whl/$CUDA_VERSION
+    pip install vllm==$VLLM_VERSION
+else
+    # Install PyTorch 2.6.0 and vLLM 0.8.5.post1 for older architectures
+    PYTORCH_VERSION="2.6.0"
+    TORCHVISION_VERSION="0.21.0"
+    TORCHAUDIO_VERSION="2.6.0"
+    VLLM_VERSION="0.8.5.post1"
+    CUDA_VERSION="cu124"
+    echo "Installing torch==$PYTORCH_VERSION, torchvision==$TORCHVISION_VERSION, torchaudio==$TORCHAUDIO_VERSION ($CUDA_VERSION) and vllm==$VLLM_VERSION"
+    pip install --no-cache-dir torch==$PYTORCH_VERSION torchvision==$TORCHVISION_VERSION torchaudio==$TORCHAUDIO_VERSION --index-url https://download.pytorch.org/whl/$CUDA_VERSION
+    pip install vllm==$VLLM_VERSION
+fi
+
+echo "PyTorch and vLLM installation complete."
 
 #############################
-# 2. Clone verl and Install Core Requirements
+# 3. Clone verl and Install Core Requirements
 #############################
 
 # Set repository directory in WORKING_DIR
@@ -66,10 +114,7 @@ fi
 echo "Changing directory to verl repository: $VERL_REPO_ROOT"
 cd "$VERL_REPO_ROOT"
 
-# Install vLLM and SGLang explicitly with specified versions
-echo "Installing vLLM"
-pip install vllm
-
+# Install SGLang explicitly (vLLM is handled earlier)
 echo "Installing sglang"
 pip install sglang[all]
 
@@ -80,13 +125,17 @@ pip install -e .[default]
 
 # Install flash_attn separately with no-build-isolation and specific version/index url
 # This is kept separate as it's a common source of issues and explicitly controlling it can help
-echo "Installing flash-attn with --no-build-isolation"
-pip install --no-build-isolation flash-attn
+if ! $IS_BLACKWELL; then
+    echo "Installing flash-attn with --no-build-isolation"
+    pip install --no-build-isolation flash-attn
+else
+    echo "Skipping flash-attn installation for Blackwell or newer GPUs."
+fi
 
 echo "Verl and required dependencies installation complete."
 
 #############################
-# 3. Install Megatron-LM and TransformerEngine (Optional)
+# 4. Install Megatron-LM and TransformerEngine (Optional)
 #############################
 
 # Set USE_MEGATRON to 1 to enable Megatron-LM installation, 0 to disable
