@@ -155,7 +155,7 @@ Before running a training job, you'll need to prepare the dataset:
 
 3. Process the geo3k dataset:
 ```bash
-    python3 examples/data_preprocess/geo3k.py --local_dir /data/datasets/geo3k
+    g
 ```
 
 
