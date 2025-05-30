@@ -110,7 +110,7 @@ if [ -z "$COMPUTE_CAP" ]; then
     echo "Could not detect NVIDIA GPU compute capability. Assuming older architecture compatible with PyTorch 2.6 / vLLM 0.8.5.post1."
 else
     MAJOR_COMPUTE_CAP=$(echo "$COMPUTE_CAP" | cut -d. -f1)
-    if [ "$MAJOR_COMPUTE_CAP" -ge 9 ]; then
+    if [ "$MAJOR_COMPUTE_CAP" -ge 10 ]; then
         IS_BLACKWELL=true
         echo "Detected NVIDIA GPU with compute capability $COMPUTE_CAP (likely Blackwell or newer)."
     # else
