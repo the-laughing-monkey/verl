@@ -8,6 +8,7 @@ python3 -m verl.trainer.main_ppo \
     data.train_files=/data/datasets/geo3k/train.parquet \
     data.val_files=/data/datasets/geo3k/test.parquet \
     data.train_batch_size=32 \
+    data.val_batch_size=8 \
     data.max_prompt_length=1024 \
     data.max_response_length=2048 \
     data.filter_overlong_prompts=True \
