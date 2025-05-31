@@ -5,8 +5,8 @@ export VERL_LOGGING_LEVEL=INFO # Or DEBUG for even more detailed logs
 
 python3 -m verl.trainer.main_ppo \
     algorithm.adv_estimator=grpo \
-    data.train_files=/data/datasets/geo3k/data/train-00000-of-00001.parquet \
-    data.val_files=/data/datasets/geo3k/data/test-00000-of-00001.parquet \
+    data.train_files=/data/datasets/geo3k/train.parquet \
+    data.val_files=/data/datasets/geo3k/test.parquet \
     data.train_batch_size=512 \
     data.max_prompt_length=1024 \
     data.max_response_length=2048 \
