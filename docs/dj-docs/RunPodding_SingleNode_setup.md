@@ -148,14 +148,9 @@ Before running a training job, you'll need to prepare the dataset:
 
 2. Download and prepare the geo3k dataset:
 
-```bash
-    cd /workspace/verl
-    python3 examples/downloaders/download_geo3k.py --root_dir /data/datasets/geo3k
-```
-
 3. Process the geo3k dataset:
 ```bash
-    g
+    python3 examples/downloaders/download_dataset.py --dataset_name hiyouga/geometry3k --root_dir /data/datasets/geo3k
 ```
 
 
